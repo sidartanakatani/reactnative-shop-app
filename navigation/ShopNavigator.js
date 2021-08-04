@@ -2,17 +2,24 @@ import React from 'react';
 import { enableScreens } from 'react-native-screens';
 import { createStackNavigator } from '@react-navigation/stack';
 // import { createNativeStackNavigator } from 'react-native-screens/native-stack';
-import { createDrawerNavigator } from '@react-navigation/drawer';
-import { Platform } from 'react-native';
+import {
+  createDrawerNavigator,
+  DrawerContentScrollView,
+  DrawerItemList,
+  DrawerItem
+} from '@react-navigation/drawer';
+import { Platform, Button } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useDispatch } from 'react-redux';
 
 import ProductsOverviewScreen from '../screens/shop/ProductsOverviewScreen';
 import ProductDetailScreen from '../screens/shop/ProductDetailScreen';
 import CartScreen from '../screens/shop/CartScreen';
 import OrdersScreen from '../screens/shop/OrdersScreen';
 import UserProductsScreen from '../screens/user/UserProductsScreen';
-import Colors from '../constants/Colors';
 import EditProductScreen from '../screens/user/EditProductScreen';
+import Colors from '../constants/Colors';
+import * as authActions from '../store/actions/auth';
 
 enableScreens();
 
@@ -73,13 +80,17 @@ function Admin() {
       initialRouteName="UserProducts"
       screenOptions={defaultNavigationOptions}
     >
-      <AdminNavigator.Screen name="UserProducts" component={UserProductsScreen} />
+      <AdminNavigator.Screen
+        name="UserProducts"
+        component={UserProductsScreen}
+      />
       <AdminNavigator.Screen name="EditProduct" component={EditProductScreen} />
     </AdminNavigator.Navigator>
   );
 }
 
 export default () => {
+  const dispatch = useDispatch();
   return (
     <ShopNavigator.Navigator
       initialRouteName={Products}
@@ -88,6 +99,28 @@ export default () => {
         labelStyle: {
           fontFamily: 'open-sans-bold'
         }
+      }}
+      drawerContent={(props) => {
+        return (
+          <DrawerContentScrollView {...props}>
+            <DrawerItemList {...props} />
+            <DrawerItem
+              label="Logout"
+              inactiveTintColor={Colors.primary}
+              icon={({ color }) => (
+                <Ionicons
+                  name={Platform.OS === 'android' ? 'md-exit' : 'ios-exit'}
+                  size={23}
+                  color={color}
+                />
+              )}
+              labelStyle={{ fontFamily: 'open-sans-bold' }}
+              onPress={() => {
+                dispatch(authActions.logout());
+              }}
+            />
+          </DrawerContentScrollView>
+        );
       }}
     >
       <ShopNavigator.Screen
