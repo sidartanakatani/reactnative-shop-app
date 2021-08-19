@@ -28,7 +28,8 @@ const CartScreen = (props) => {
         productTitle: state.cart.items[key].productTitle,
         productPrice: state.cart.items[key].productPrice,
         quantity: state.cart.items[key].quantity,
-        sum: state.cart.items[key].sum
+        sum: state.cart.items[key].sum,
+        productPushToken: state.cart.items[key].pushToken
       });
     }
     return transformedCartItems.sort((a, b) =>

@@ -3,12 +3,14 @@ import Order from '../../models/order';
 export const ADD_ORDER = 'ADD_ORDER';
 export const SET_ORDERS = 'SET_ORDERS';
 
+const FIREBASE_URL = 'https://reactnative-shop-app-ae8e2-default-rtdb.firebaseio.com/orders';
+
 export const fetchOrders = () => {
   return async (dispatch, getState) => {
     const userId = getState().auth.userId;
     try {
       const response = await fetch(
-        `https://reactnative-shop-app-ae8e2-default-rtdb.firebaseio.com/orders/${userId}.json`
+        `${FIREBASE_URL}/${userId}.json`
       );
 
       if (!response.ok) {
@@ -36,6 +38,25 @@ export const fetchOrders = () => {
   };
 };
 
+export const sendNotification = (pushToken, cartItem) => {
+  fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Accept-Encoding': 'gzip, deflate',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        to: pushToken,
+        data: {
+          extraData: cartItem
+        },
+        title: 'Order was placed!',
+        body: cartItem.productTitle
+      })
+    });
+}
+
 export const addOrder = (cartItems, totalAmount) => {
   return async (dispatch, getState) => {
     const token = getState().auth.token;
@@ -43,7 +64,7 @@ export const addOrder = (cartItems, totalAmount) => {
     const date = new Date();
 
     const response = await fetch(
-      `https://reactnative-shop-app-ae8e2-default-rtdb.firebaseio.com/orders/${userId}.json?auth=${token}`,
+      `${FIREBASE_URL}/${userId}.json?auth=${token}`,
       {
         method: 'POST',
         headers: {
@@ -72,5 +93,11 @@ export const addOrder = (cartItems, totalAmount) => {
         date: date
       }
     });
+
+    for (const cartItem of cartItems) {
+      const pushToken = cartItem.productPushToken;
+
+      sendNotification(pushToken, cartItem);
+    }
   };
 };
